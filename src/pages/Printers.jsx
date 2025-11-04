@@ -125,7 +125,7 @@ const Printers = () => {
         </div>
 
         {/* Controls */}
-        <div className="bg-white dark:bg-indigo-900/50 rounded-xl shadow-md p-4 sm:p-6 mb-6 border border-gray-200 dark:border-indigo-700/50">
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-md p-4 sm:p-6 mb-6 border border-gray-200 dark:border-gray-700/50">
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
             {/* Search */}
             <div className="relative flex-1 w-full sm:max-w-md">
@@ -135,7 +135,7 @@ const Printers = () => {
                 placeholder="Yazıcı ara..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-indigo-600/50 rounded-lg bg-white dark:bg-indigo-800/50 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600/50 rounded-lg bg-white dark:bg-gray-700/50 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
               />
             </div>
 
@@ -144,7 +144,7 @@ const Printers = () => {
               <select
                 value={filterActive}
                 onChange={(e) => setFilterActive(e.target.value)}
-                className="flex-1 sm:flex-initial px-4 py-2 border border-gray-300 dark:border-indigo-600/50 rounded-lg bg-white dark:bg-indigo-800/50 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                className="flex-1 sm:flex-initial px-4 py-2 border border-gray-300 dark:border-gray-600/50 rounded-lg bg-white dark:bg-gray-700/50 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
               >
                 <option value="all">Tümü</option>
                 <option value="active">Aktif</option>
@@ -163,7 +163,7 @@ const Printers = () => {
 
         {/* Add/Edit Printer Form */}
         {(isAddingPrinter || editingPrinter) && (
-          <div className="bg-white dark:bg-indigo-900/50 rounded-xl shadow-md p-6 mb-6 border border-gray-200 dark:border-indigo-700/50">
+          <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-md p-6 mb-6 border border-gray-200 dark:border-gray-700/50">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-800 dark:text-white">
                 {isAddingPrinter ? 'Yeni Yazıcı Ekle' : 'Yazıcıyı Düzenle'}
@@ -190,7 +190,7 @@ const Printers = () => {
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-indigo-600/50 rounded-lg bg-white dark:bg-indigo-800/50 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600/50 rounded-lg bg-white dark:bg-gray-700/50 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                   placeholder="Örn: Üretim Hattı Yazıcı 1"
                 />
               </div>
@@ -204,7 +204,7 @@ const Printers = () => {
                   type="text"
                   value={formData.model}
                   onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-indigo-600/50 rounded-lg bg-white dark:bg-indigo-800/50 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600/50 rounded-lg bg-white dark:bg-gray-700/50 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                   placeholder="Örn: Industrial Printer X1000"
                 />
               </div>
@@ -217,7 +217,7 @@ const Printers = () => {
                 <select
                   value={formData.protocolType}
                   onChange={(e) => setFormData({ ...formData, protocolType: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-indigo-600/50 rounded-lg bg-white dark:bg-indigo-800/50 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600/50 rounded-lg bg-white dark:bg-gray-700/50 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                 >
                   {Object.entries(ProtocolTypes).map(([key, value]) => (
                     <option key={key} value={key}>{value}</option>
@@ -239,7 +239,7 @@ const Printers = () => {
                   type="text"
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-indigo-600/50 rounded-lg bg-white dark:bg-indigo-800/50 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600/50 rounded-lg bg-white dark:bg-gray-700/50 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                   placeholder={
                     parseInt(formData.protocolType) === 0 ? '192.168.1.100' :
                     parseInt(formData.protocolType) === 1 ? 'USB001' :
@@ -258,7 +258,7 @@ const Printers = () => {
                     type="number"
                     value={formData.port}
                     onChange={(e) => setFormData({ ...formData, port: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-indigo-600/50 rounded-lg bg-white dark:bg-indigo-800/50 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600/50 rounded-lg bg-white dark:bg-gray-700/50 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                     placeholder="9100"
                   />
                 </div>
@@ -274,7 +274,7 @@ const Printers = () => {
                     type="text"
                     value={formData.dllPath}
                     onChange={(e) => setFormData({ ...formData, dllPath: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-indigo-600/50 rounded-lg bg-white dark:bg-indigo-800/50 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600/50 rounded-lg bg-white dark:bg-gray-700/50 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                     placeholder="C:\Printers\CustomDriver.dll"
                   />
                 </div>
@@ -293,7 +293,7 @@ const Printers = () => {
         )}
 
         {/* Printers Table */}
-        <div className="bg-white dark:bg-indigo-900/50 rounded-xl shadow-md border border-gray-200 dark:border-indigo-700/50 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-md border border-gray-200 dark:border-gray-700/50 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">

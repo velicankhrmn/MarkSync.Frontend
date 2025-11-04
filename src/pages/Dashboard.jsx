@@ -55,7 +55,7 @@ const Dashboard = () => {
 
         {/* Statistics Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6 mb-8">
-          <div className="bg-white dark:bg-indigo-900/50 rounded-xl shadow-md p-4 sm:p-6 border border-gray-200 dark:border-indigo-700/50">
+          <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-md p-4 sm:p-6 border border-gray-200 dark:border-gray-700/50">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4">
               <div className="p-2 sm:p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
                 <Printer size={20} className="text-gray-600 dark:text-gray-400 sm:w-6 sm:h-6" />
@@ -67,7 +67,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-indigo-900/50 rounded-xl shadow-md p-4 sm:p-6 border border-gray-200 dark:border-indigo-700/50">
+          <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-md p-4 sm:p-6 border border-gray-200 dark:border-gray-700/50">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4">
               <div className="p-2 sm:p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
                 <Activity size={20} className="text-blue-600 dark:text-blue-400 sm:w-6 sm:h-6" />
@@ -79,7 +79,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-indigo-900/50 rounded-xl shadow-md p-4 sm:p-6 border border-gray-200 dark:border-indigo-700/50">
+          <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-md p-4 sm:p-6 border border-gray-200 dark:border-gray-700/50">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4">
               <div className="p-2 sm:p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
                 <CheckCircle size={20} className="text-green-600 dark:text-green-400 sm:w-6 sm:h-6" />
@@ -91,7 +91,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-indigo-900/50 rounded-xl shadow-md p-4 sm:p-6 border border-gray-200 dark:border-indigo-700/50">
+          <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-md p-4 sm:p-6 border border-gray-200 dark:border-gray-700/50">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4">
               <div className="p-2 sm:p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
                 <XCircle size={20} className="text-gray-600 dark:text-gray-400 sm:w-6 sm:h-6" />
@@ -103,7 +103,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-indigo-900/50 rounded-xl shadow-md p-4 sm:p-6 border border-gray-200 dark:border-indigo-700/50">
+          <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-md p-4 sm:p-6 border border-gray-200 dark:border-gray-700/50">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4">
               <div className="p-2 sm:p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
                 <AlertCircle size={20} className="text-red-600 dark:text-red-400 sm:w-6 sm:h-6" />
@@ -125,10 +125,10 @@ const Dashboard = () => {
               return (
                 <div
                   key={printer.printerId}
-                  className="bg-white dark:bg-indigo-900/50 rounded-xl shadow-md border border-gray-200 dark:border-indigo-700/50 overflow-hidden hover:shadow-lg transition-shadow"
+                  className="bg-white dark:bg-gray-800/50 rounded-xl shadow-md border border-gray-200 dark:border-gray-700/50 overflow-hidden hover:shadow-lg transition-shadow"
                 >
                   {/* Card Header */}
-                  <div className="p-6 border-b border-gray-200 dark:border-indigo-700/50 bg-gray-50 dark:bg-indigo-800/30">
+                  <div className="p-6 border-b border-gray-200 dark:border-gray-700/50 bg-gray-50 dark:bg-gray-700/30">
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-start gap-3">
                         <div className={`p-2 rounded-lg ${
@@ -183,7 +183,7 @@ const Dashboard = () => {
                         </div>
                       </div>
                     ) : (
-                      <div className="p-4 bg-gray-50 dark:bg-indigo-800/30 rounded-lg border border-gray-200 dark:border-indigo-600/50">
+                      <div className="p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg border border-gray-200 dark:border-gray-600/50">
                         <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
                           Aktif şablon yok
                         </p>
@@ -209,7 +209,7 @@ const Dashboard = () => {
                             {printer.inkLevel.toFixed(1)}%
                           </span>
                         </div>
-                        <div className="w-full bg-gray-200 dark:bg-indigo-950 rounded-full h-2.5 overflow-hidden">
+                        <div className="w-full bg-gray-200 dark:bg-gray-900 rounded-full h-2.5 overflow-hidden">
                           <div
                             className="h-full rounded-full transition-all duration-500"
                             style={{
@@ -238,7 +238,7 @@ const Dashboard = () => {
                             {printer.solventLevel.toFixed(1)}%
                           </span>
                         </div>
-                        <div className="w-full bg-gray-200 dark:bg-indigo-950 rounded-full h-2.5 overflow-hidden">
+                        <div className="w-full bg-gray-200 dark:bg-gray-900 rounded-full h-2.5 overflow-hidden">
                           <div
                             className="h-full rounded-full transition-all duration-500"
                             style={{

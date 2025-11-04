@@ -28,8 +28,8 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-cyan-500 dark:from-indigo-950 dark:to-purple-950 p-4">
-      <div className="bg-white dark:bg-indigo-900/70 rounded-2xl shadow-2xl p-8 sm:p-10 w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-cyan-500 dark:from-gray-900 dark:to-gray-800 p-4">
+      <div className="bg-white dark:bg-gray-800/70 rounded-2xl shadow-2xl p-8 sm:p-10 w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="text-center mb-8">
           <img src="/3SINK-LOGO.png" alt="3SINK Logo" className="h-16 w-auto mx-auto mb-6" />
           <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
@@ -51,7 +51,7 @@ const Login = () => {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 dark:border-indigo-600/50 bg-white dark:bg-indigo-800/50 text-gray-800 dark:text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all outline-none"
+              className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600/50 bg-white dark:bg-gray-700/50 text-gray-800 dark:text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all outline-none"
               placeholder="Kullanıcı adınızı giriniz"
               autoComplete="username"
             />
@@ -67,7 +67,7 @@ const Login = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 dark:border-indigo-600/50 bg-white dark:bg-indigo-800/50 text-gray-800 dark:text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all outline-none"
+              className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600/50 bg-white dark:bg-gray-700/50 text-gray-800 dark:text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all outline-none"
               placeholder="Şifrenizi giriniz"
               autoComplete="current-password"
             />
@@ -88,7 +88,7 @@ const Login = () => {
           </button>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-gray-200 dark:border-indigo-700/50">
+        <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700/50">
           <p className="text-center text-sm text-gray-500 dark:text-gray-400 italic">
             Demo: Herhangi bir kullanıcı adı ve şifre ile giriş yapabilirsiniz
           </p>
