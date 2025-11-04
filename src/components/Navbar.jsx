@@ -1,0 +1,155 @@
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
+import { Moon, Sun, LogOut, Menu, X, Printer, LayoutDashboard } from 'lucide-react';
+import { useState } from 'react';
+
+const Navbar = () => {
+  const { isDark, toggleTheme } = useTheme();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  const isActive = (path) => location.pathname === path;
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  if (!user) return null;
+
+  return (
+    <nav className="sticky top-0 z-50 bg-white dark:bg-indigo-900/60 dark:backdrop-blur-sm border-b border-gray-200 dark:border-indigo-700 shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link to="https://3sink.com" className="flex-shrink-0">
+            <div className="px-3 py-2 rounded-lg bg-white dark:bg-gradient-to-br dark:from-indigo-300 dark:to-purple-800">
+              <img src="/3SINK-LOGO.png" alt="3SINK Logo" className="h-10 w-auto" />
+            </div>
+          </Link>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex md:items-center md:space-x-2 flex-1 ml-8">
+            <Link
+              to="/dashboard"
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                isActive('/dashboard')
+                  ? 'bg-blue-500 text-white'
+                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-indigo-800/50'
+              }`}
+            >
+              <LayoutDashboard size={20} />
+              <span>Dashboard</span>
+            </Link>
+            <Link
+              to="/printers"
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                isActive('/printers')
+                  ? 'bg-blue-500 text-white'
+                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-indigo-800/50'
+              }`}
+            >
+              <Printer size={20} />
+              <span>Yazıcılar</span>
+            </Link>
+          </div>
+
+          {/* Right Side Controls */}
+          <div className="flex items-center gap-3">
+            {/* User Info - Hidden on mobile */}
+            <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-indigo-800/50 rounded-lg border border-gray-200 dark:border-indigo-600/50">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{user.name}</span>
+            </div>
+
+            {/* Theme Toggle - Hidden on mobile */}
+            <button
+              className="hidden sm:flex items-center justify-center p-2 bg-gray-50 dark:bg-indigo-800/50 border border-gray-200 dark:border-indigo-600/50 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-indigo-700/50 transition-all"
+              onClick={toggleTheme}
+              aria-label="Toggle theme"
+            >
+              {isDark ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+
+            {/* Logout Button - Hidden on mobile */}
+            <button
+              className="hidden sm:flex items-center justify-center p-2 bg-gray-50 dark:bg-indigo-800/50 border border-gray-200 dark:border-indigo-600/50 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200 dark:hover:bg-red-900/30 dark:hover:border-red-700 transition-all"
+              onClick={handleLogout}
+              aria-label="Logout"
+            >
+              <LogOut size={20} />
+            </button>
+
+            {/* Mobile Menu Toggle */}
+            <button
+              className="md:hidden flex items-center justify-center p-2 text-gray-700 dark:text-gray-200"
+              onClick={toggleMobileMenu}
+              aria-label="Toggle menu"
+            >
+              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+          <div className="px-4 py-3 space-y-2">
+            <Link
+              to="/dashboard"
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${
+                isActive('/dashboard')
+                  ? 'bg-blue-500 text-white'
+                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-indigo-800/50'
+              }`}
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <LayoutDashboard size={20} />
+              <span>Dashboard</span>
+            </Link>
+            <Link
+              to="/printers"
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${
+                isActive('/printers')
+                  ? 'bg-blue-500 text-white'
+                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-indigo-800/50'
+              }`}
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <Printer size={20} />
+              <span>Yazıcılar</span>
+            </Link>
+            <div className="pt-2 mt-2 border-t border-gray-200 dark:border-indigo-700/50 flex items-center gap-2">
+              <button
+                className="flex-1 flex items-center justify-center gap-2 p-3 bg-gray-50 dark:bg-indigo-800/50 rounded-lg text-gray-700 dark:text-gray-200"
+                onClick={() => {
+                  toggleTheme();
+                  setIsMobileMenuOpen(false);
+                }}
+              >
+                {isDark ? <Sun size={20} /> : <Moon size={20} />}
+                <span className="text-sm">{isDark ? 'Açık Mod' : 'Koyu Mod'}</span>
+              </button>
+              <button
+                className="flex-1 flex items-center justify-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg"
+                onClick={handleLogout}
+              >
+                <LogOut size={20} />
+                <span className="text-sm">Çıkış</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </nav>
+  );
+};
+
+export default Navbar;
