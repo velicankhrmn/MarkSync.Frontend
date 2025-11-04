@@ -1,16 +1,129 @@
-# React + Vite
+# 🏭 MarkSync Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Bu proje, endüstriyel yazıcıların durumlarını **gerçek zamanlı olarak izlemek**, yönetmek ve kontrol etmek için tasarlanmış modern bir **React + Vite** tabanlı web arayüzüdür.  
+Koyu endüstriyel renk paleti (#1F2937, #262654) ve **TailwindCSS** ile tasarlanmıştır.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Özellikler
 
-## React Compiler
+- ⚙️ **Gerçek zamanlı cihaz durumu takibi**
+- 🌐 **REST API üzerinden dinamik veri iletişimi**
+- 🧠 **Zustand ile global state yönetimi**
+- 🎨 **TailwindCSS ile modern, endüstriyel arayüz**
+- 🔐 **JWT tabanlı oturum yönetimi**
+- 🧩 **Modüler dosya yapısı (api, store, components, pages)**
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 🏗️ Teknolojiler
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+| Teknoloji | Açıklama |
+|------------|-----------|
+| [React 19](https://react.dev/) | Arayüz kütüphanesi |
+| [Vite](https://vitejs.dev/) | Hızlı geliştirme ortamı |
+| [TailwindCSS](https://tailwindcss.com/) | CSS framework |
+| [Zustand](https://github.com/pmndrs/zustand) | State management |
+| [Axios](https://axios-http.com/) | API iletişimi |
+| [React Router DOM 7](https://reactrouter.com/) | Sayfa yönlendirme |
+
+---
+
+## 🗂️ Proje Yapısı
+
+```
+frontend/
+├─ public/
+│  └─ logo.png
+├─ src/
+│  ├─ api/                # API servisleri
+│  ├─ assets/             # Görseller, ikonlar
+│  ├─ components/         # UI bileşenleri
+│  ├─ hooks/              # Özel React hook'ları
+│  ├─ pages/              # Sayfalar (Login, Dashboard, Printers)
+│  ├─ store/              # Zustand state yönetimi
+│  ├─ utils/              # Yardımcı fonksiyonlar
+│  ├─ App.jsx
+│  └─ main.jsx
+├─ .env
+├─ tailwind.config.js
+└─ package.json
+```
+
+---
+
+## ⚡ Kurulum
+
+### 1️⃣ Gerekli bağımlılıkları yükle
+```bash
+npm install
+```
+
+### 2️⃣ Geliştirme ortamını başlat
+```bash
+npm run dev
+```
+
+### 3️⃣ Tarayıcıdan görüntüle
+```
+http://localhost:5173
+```
+
+---
+
+## ⚙️ Ortam Değişkenleri
+
+`.env` dosyasında API adresini tanımla:
+
+```
+VITE_API_URL=http://localhost:5000/api
+```
+
+---
+
+## 🧠 Kullanım Akışı
+
+1. Kullanıcı giriş yapar (JWT doğrulaması yapılır)  
+2. Dashboard üzerinde **yazıcı durumları** canlı olarak izlenir  
+3. Yazıcı listesi sayfasında tüm cihazlar gösterilir  
+4. Her yazıcı için API üzerinden durumu güncellenir  
+5. WebSocket veya periyodik sorgu ile gerçek zamanlı veri akışı sağlanır  
+
+---
+
+## 🧩 Geliştirici Bilgileri
+
+**Proje Adı:** MarkSync Frontend  
+**Repo:** [MarkSync.Frontend](https://github.com/velicankhrmn/MarkSync.Frontend)  
+**Geliştirici:** [Veli Kahraman](https://github.com/velicankhrmn)  
+**Durum:** 🔒 Private Repository  
+
+---
+
+## 🧰 Komutlar
+
+| Komut | Açıklama |
+|-------|-----------|
+| `npm run dev` | Geliştirme sunucusunu başlatır |
+| `npm run build` | Üretim derlemesi oluşturur |
+| `npm run preview` | Derlenmiş sürümü önizler |
+| `npm run lint` | Kod standartlarını kontrol eder |
+
+---
+
+## 📦 Deploy
+
+Üretim sürümü oluşturmak için:
+```bash
+npm run build
+```
+
+Çıktı `dist/` klasörüne oluşturulur.  
+Bu klasörü herhangi bir web sunucusuna veya CDN’e yükleyebilirsin (örneğin **Vercel**, **Netlify** veya **Render**).
+
+---
+
+## 📜 Lisans
+
+MIT License © 2025  
+Bu proje **3SINK MarkSync Projesi** kapsamında geliştirilmiştir.
