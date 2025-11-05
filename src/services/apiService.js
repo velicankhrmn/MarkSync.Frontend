@@ -55,18 +55,32 @@ class ApiService {
 
       clearTimeout(timeoutId);
 
-      // Yanıtı JSON olarak parse et
-      const data = await response.json();
-
       // Hata durumunda özel hata fırlat
       if (!response.ok) {
+        let errorData = null;
+        try {
+          errorData = await response.json();
+        } catch (e) {
+          // JSON parse edilemezse boş bırak
+        }
         const error = {
           status: response.status,
-          message: data.message || 'Bir hata oluştu',
-          data: data,
+          message: errorData?.message || 'Bir hata oluştu',
+          data: errorData,
         };
         logger.apiError(config.method, url, error);
         throw error;
+      }
+
+      // 204 No Content durumunda body yok
+      let data = null;
+      if (response.status !== 204) {
+        try {
+          data = await response.json();
+        } catch (e) {
+          // JSON parse edilemezse null dön
+          data = null;
+        }
       }
 
       // Response log

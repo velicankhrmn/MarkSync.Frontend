@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
-import { Moon, Sun, LogOut, Menu, X, Printer, LayoutDashboard } from 'lucide-react';
+import { Moon, Sun, LogOut, Menu, X, Printer, LayoutDashboard, Users } from 'lucide-react';
 import { useState } from 'react';
 
 const Navbar = () => {
@@ -56,6 +56,17 @@ const Navbar = () => {
             >
               <Printer size={20} />
               <span>Yazıcılar</span>
+            </Link>
+            <Link
+              to="/users"
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                isActive('/users')
+                  ? 'bg-blue-500 text-white'
+                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'
+              }`}
+            >
+              <Users size={20} />
+              <span>Kullanıcılar</span>
             </Link>
           </div>
 
@@ -123,6 +134,18 @@ const Navbar = () => {
             >
               <Printer size={20} />
               <span>Yazıcılar</span>
+            </Link>
+            <Link
+              to="/users"
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${
+                isActive('/users')
+                  ? 'bg-blue-500 text-white'
+                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'
+              }`}
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <Users size={20} />
+              <span>Kullanıcılar</span>
             </Link>
             <div className="pt-2 mt-2 border-t border-gray-200 dark:border-gray-700/50 flex items-center gap-2">
               <button

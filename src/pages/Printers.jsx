@@ -1,5 +1,7 @@
-import { useState } from 'react';
-import { mockPrinters, ProtocolTypes, getProtocolTypeName } from '../data/mockData';
+import { useState, useEffect } from 'react';
+import { ProtocolTypes, ProtocolTypeNames, getProtocolTypeName } from '../constants/protocolTypes';
+import { getPrinterModels } from '../constants/printerModels';
+import printerService from '../services/printerService';
 import {
   Printer,
   Edit,
@@ -9,11 +11,15 @@ import {
   Save,
   Search,
   Power,
-  PowerOff
+  PowerOff,
+  RefreshCw,
+  AlertCircle
 } from 'lucide-react';
 
 const Printers = () => {
-  const [printers, setPrinters] = useState(mockPrinters);
+  const [printers, setPrinters] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterActive, setFilterActive] = useState('all');
   const [isAddingPrinter, setIsAddingPrinter] = useState(false);
@@ -26,6 +32,24 @@ const Printers = () => {
     port: 9100,
     dllPath: ''
   });
+
+  // Yazıcıları yükle
+  useEffect(() => {
+    loadPrinters();
+  }, []);
+
+  const loadPrinters = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await printerService.getAllPrinters();
+      setPrinters(data || []);
+    } catch (err) {
+      setError(err.message || 'Yazıcılar yüklenirken bir hata oluştu');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredPrinters = printers.filter(printer => {
     const matchesSearch = printer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -49,56 +73,100 @@ const Printers = () => {
     });
   };
 
-  const handleSave = (id) => {
-    setPrinters(printers.map(p =>
-      p.id === id
-        ? {
-            ...p,
-            name: formData.name,
-            model: formData.model,
-            protocolType: parseInt(formData.protocolType),
-            address: formData.address,
-            port: formData.port ? parseInt(formData.port) : null,
-            dllPath: formData.dllPath || null
-          }
-        : p
-    ));
-    setEditingPrinter(null);
-  };
+  const handleSave = async (id) => {
+    try {
+      setLoading(true);
 
-  const handleDelete = (id) => {
-    if (window.confirm('Bu yazıcıyı silmek istediğinizden emin misiniz?')) {
-      setPrinters(printers.filter(p => p.id !== id));
+      // Mevcut yazıcıyı bul ve isActive durumunu koru
+      const currentPrinter = printers.find(p => p.id === id);
+      const updatedData = {
+        name: formData.name,
+        model: formData.model,
+        protocolType: parseInt(formData.protocolType),
+        address: formData.address,
+        port: formData.port ? parseInt(formData.port) : null,
+        dllPath: formData.dllPath || null,
+        isActive: currentPrinter?.isActive || false
+      };
+
+      await printerService.updatePrinter(id, updatedData);
+
+      setEditingPrinter(null);
+      resetForm();
+
+      // İşlem başarılı, sayfayı yenile
+      await loadPrinters();
+    } catch (err) {
+      alert(err.message || 'Yazıcı güncellenirken bir hata oluştu');
+      setLoading(false);
     }
   };
 
-  const handleToggleActive = (id) => {
-    setPrinters(printers.map(p =>
-      p.id === id ? { ...p, isActive: !p.isActive } : p
-    ));
+  const handleDelete = async (id) => {
+    if (window.confirm('Bu yazıcıyı silmek istediğinizden emin misiniz?')) {
+      try {
+        setLoading(true);
+        await printerService.deletePrinter(id);
+
+        // İşlem başarılı, sayfayı yenile
+        await loadPrinters();
+      } catch (err) {
+        alert(err.message || 'Yazıcı silinirken bir hata oluştu');
+        setLoading(false);
+      }
+    }
   };
 
-  const handleAddPrinter = () => {
-    const newPrinter = {
-      id: crypto.randomUUID(),
-      name: formData.name,
-      model: formData.model,
-      protocolType: parseInt(formData.protocolType),
-      address: formData.address,
-      port: formData.port ? parseInt(formData.port) : null,
-      dllPath: formData.dllPath || null,
-      isActive: false
-    };
-    setPrinters([...printers, newPrinter]);
-    setIsAddingPrinter(false);
-    setFormData({
-      name: '',
-      model: '',
-      protocolType: 0,
-      address: '',
-      port: 9100,
-      dllPath: ''
-    });
+  const handleToggleActive = async (id) => {
+    try {
+      const printer = printers.find(p => p.id === id);
+      if (!printer) return;
+
+      const newActiveState = !printer.isActive;
+
+      // Optimistic update
+      setPrinters(printers.map(p =>
+        p.id === id ? { ...p, isActive: newActiveState } : p
+      ));
+
+      await printerService.togglePrinterStatus(id, newActiveState);
+
+      // İşlem başarılı, sayfayı yenile
+      await loadPrinters();
+    } catch (err) {
+      // Revert on error
+      setPrinters(printers.map(p =>
+        p.id === id ? { ...p, isActive: !p.isActive } : p
+      ));
+      alert(err.message || 'Yazıcı durumu değiştirilirken bir hata oluştu');
+    }
+  };
+
+  const handleAddPrinter = async () => {
+    try {
+      setLoading(true);
+
+      const newPrinterData = {
+        name: formData.name,
+        model: formData.model,
+        protocolType: parseInt(formData.protocolType),
+        address: formData.address,
+        port: formData.port ? parseInt(formData.port) : null,
+        dllPath: formData.dllPath || null,
+        isActive: false
+      };
+
+      await printerService.addPrinter(newPrinterData);
+
+      setIsAddingPrinter(false);
+      resetForm();
+
+      // İşlem başarılı, sayfayı yenile
+      await loadPrinters();
+    } catch (err) {
+      alert(err.message || 'Yazıcı eklenirken bir hata oluştu');
+      setLoading(false);
+    }
   };
 
   const resetForm = () => {
@@ -123,6 +191,24 @@ const Printers = () => {
             Yazıcılarınızı yapılandırın ve yönetin
           </p>
         </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 mb-6 flex items-center gap-3">
+            <AlertCircle className="text-red-600 dark:text-red-400 flex-shrink-0" size={24} />
+            <div className="flex-1">
+              <p className="text-red-800 dark:text-red-200 font-medium">Hata</p>
+              <p className="text-red-700 dark:text-red-300 text-sm">{error}</p>
+            </div>
+            <button
+              onClick={loadPrinters}
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all"
+            >
+              <RefreshCw size={16} />
+              Tekrar Dene
+            </button>
+          </div>
+        )}
 
         {/* Controls */}
         <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-md p-4 sm:p-6 mb-6 border border-gray-200 dark:border-gray-700/50">
@@ -200,13 +286,18 @@ const Printers = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Model *
                 </label>
-                <input
-                  type="text"
+                <select
                   value={formData.model}
                   onChange={(e) => setFormData({ ...formData, model: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600/50 rounded-lg bg-white dark:bg-gray-700/50 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                  placeholder="Örn: Industrial Printer X1000"
-                />
+                >
+                  <option value="">Model Seçiniz</option>
+                  {getPrinterModels().map((model) => (
+                    <option key={model} value={model}>
+                      {model}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Protocol Type */}
@@ -220,7 +311,7 @@ const Printers = () => {
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600/50 rounded-lg bg-white dark:bg-gray-700/50 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                 >
                   {Object.entries(ProtocolTypes).map(([key, value]) => (
-                    <option key={key} value={key}>{value}</option>
+                    <option key={value} value={value}>{ProtocolTypeNames[value]}</option>
                   ))}
                 </select>
               </div>
@@ -230,9 +321,10 @@ const Printers = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Adres *
                   <span className="text-xs text-gray-500 ml-1">
-                    ({parseInt(formData.protocolType) === 0 ? 'IP Adresi' :
-                      parseInt(formData.protocolType) === 1 ? 'USB Port' :
-                      parseInt(formData.protocolType) === 2 ? 'COM Port' : 'Boş bırakılabilir'})
+                    ({parseInt(formData.protocolType) === ProtocolTypes.TCP ? 'IP Adresi' :
+                      parseInt(formData.protocolType) === ProtocolTypes.DLL ? 'DLL Adresi' :
+                      parseInt(formData.protocolType) === ProtocolTypes.HTTP ? 'HTTP URL' :
+                      parseInt(formData.protocolType) === ProtocolTypes.SERIAL ? 'COM Port' : 'Adres'})
                   </span>
                 </label>
                 <input
@@ -241,15 +333,16 @@ const Printers = () => {
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600/50 rounded-lg bg-white dark:bg-gray-700/50 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                   placeholder={
-                    parseInt(formData.protocolType) === 0 ? '192.168.1.100' :
-                    parseInt(formData.protocolType) === 1 ? 'USB001' :
-                    parseInt(formData.protocolType) === 2 ? 'COM1' : ''
+                    parseInt(formData.protocolType) === ProtocolTypes.TCP ? '192.168.1.100' :
+                    parseInt(formData.protocolType) === ProtocolTypes.DLL ? 'Printer01' :
+                    parseInt(formData.protocolType) === ProtocolTypes.HTTP ? 'http://192.168.1.100' :
+                    parseInt(formData.protocolType) === ProtocolTypes.SERIAL ? 'COM1' : ''
                   }
                 />
               </div>
 
               {/* Port (sadece TCP/IP için) */}
-              {parseInt(formData.protocolType) === 0 && (
+              {parseInt(formData.protocolType) === ProtocolTypes.TCP && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Port
@@ -264,8 +357,8 @@ const Printers = () => {
                 </div>
               )}
 
-              {/* DLL Path (sadece Custom DLL için) */}
-              {parseInt(formData.protocolType) === 3 && (
+              {/* DLL Path (sadece DLL protokolü için) */}
+              {parseInt(formData.protocolType) === ProtocolTypes.DLL && (
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     DLL Dosya Yolu
@@ -381,7 +474,13 @@ const Printers = () => {
                 ))}
               </tbody>
             </table>
-            {filteredPrinters.length === 0 && (
+            {loading && filteredPrinters.length === 0 && (
+              <div className="text-center py-12">
+                <RefreshCw size={48} className="mx-auto text-gray-400 mb-4 animate-spin" />
+                <p className="text-gray-600 dark:text-gray-400">Yazıcılar yükleniyor...</p>
+              </div>
+            )}
+            {!loading && filteredPrinters.length === 0 && (
               <div className="text-center py-12">
                 <Printer size={48} className="mx-auto text-gray-400 mb-4" />
                 <p className="text-gray-600 dark:text-gray-400">Yazıcı bulunamadı</p>
