@@ -1,5 +1,5 @@
-import { createContext, useContext, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { createContext, useContext, useState, useEffect } from 'react';
+import authService from '../services/authService';
 
 const AuthContext = createContext();
 
@@ -13,33 +13,62 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('user');
-    return saved ? JSON.parse(saved) : null;
+    // Cookie'den kullanıcı bilgilerini al
+    return authService.getCurrentUser();
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const login = (username, password) => {
-    // Mock authentication - replace with API call later
-    if (username && password) {
-      const userData = {
-        id: 1,
-        username: username,
-        name: username,
-        role: 'admin'
-      };
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
-      return true;
+  // Component mount olduğunda kullanıcı bilgilerini kontrol et
+  useEffect(() => {
+    const currentUser = authService.getCurrentUser();
+    if (currentUser) {
+      setUser(currentUser);
     }
-    return false;
+  }, []);
+
+  /**
+   * Kullanıcı girişi
+   * @param {string} username - Kullanıcı adı
+   * @param {string} password - Şifre
+   * @returns {Promise<boolean>} - Başarılı ise true, değilse false
+   */
+  const login = async (username, password) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await authService.login(username, password);
+
+      // API yanıtı: { username, role, token }
+      const userData = {
+        username: response.username,
+        name: response.username, // Backend'de name yoksa username kullan
+        role: response.role,
+      };
+
+      setUser(userData);
+      setLoading(false);
+      return true;
+    } catch (err) {
+      setLoading(false);
+      setError(err.message || 'Giriş başarısız');
+      console.error('Login error:', err);
+      return false;
+    }
   };
 
+  /**
+   * Kullanıcı çıkışı
+   */
   const logout = () => {
+    authService.logout();
     setUser(null);
-    localStorage.removeItem('user');
+    setError(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, loading, error }}>
       {children}
     </AuthContext.Provider>
   );

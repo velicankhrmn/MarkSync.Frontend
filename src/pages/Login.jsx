@@ -1,16 +1,25 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import authService from '../services/authService';
 import { LogIn, User, Lock } from 'lucide-react';
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  // Kullanıcı zaten giriş yapmışsa dashboard'a yönlendir
+  useEffect(() => {
+    if (authService.isAuthenticated()) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [navigate]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -19,11 +28,19 @@ const Login = () => {
       return;
     }
 
-    const success = login(username, password);
-    if (success) {
-      navigate('/dashboard');
-    } else {
-      setError('Giriş başarısız. Lütfen tekrar deneyiniz.');
+    setIsSubmitting(true);
+
+    try {
+      const success = await login(username, password);
+      if (success) {
+        navigate('/dashboard');
+      } else {
+        setError('Giriş başarısız. Lütfen kullanıcı adı ve şifrenizi kontrol ediniz.');
+      }
+    } catch (err) {
+      setError(err.message || 'Bir hata oluştu. Lütfen tekrar deneyiniz.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -81,16 +98,26 @@ const Login = () => {
 
           <button
             type="submit"
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-all hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 mt-6"
+            disabled={isSubmitting}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 mt-6"
           >
-            <LogIn size={20} />
-            Giriş Yap
+            {isSubmitting ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Giriş Yapılıyor...
+              </>
+            ) : (
+              <>
+                <LogIn size={20} />
+                Giriş Yap
+              </>
+            )}
           </button>
         </form>
 
         <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700/50">
-          <p className="text-center text-sm text-gray-500 dark:text-gray-400 italic">
-            Demo: Herhangi bir kullanıcı adı ve şifre ile giriş yapabilirsiniz
+          <p className="text-center text-sm text-gray-500 dark:text-gray-400">
+            Giriş yapmak için kullanıcı adı ve şifrenizi giriniz
           </p>
         </div>
       </div>
