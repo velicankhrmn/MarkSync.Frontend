@@ -62,6 +62,20 @@ export const getRoleOptions = () => {
   }));
 };
 
+/**
+ * Süper admin hariç rol seçenekleri (normal kullanıcılar için)
+ * @returns {Array<{value: string, label: string, description: string}>}
+ */
+export const getRoleOptionsWithoutSuperAdmin = () => {
+  return getAllRoles()
+    .filter(role => role !== UserRoles.SUPERADMIN)
+    .map(role => ({
+      value: role,
+      label: UserRoleNames[role],
+      description: UserRoleDescriptions[role]
+    }));
+};
+
 // Export as default
 export default {
   UserRoles,

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { UserRoles, getRoleName, getRoleOptions } from '../constants/userRoles';
+import { UserRoles, getRoleName, getRoleOptions, getRoleOptionsWithoutSuperAdmin } from '../constants/userRoles';
 import userService from '../services/userService';
 import {
   User,
@@ -293,14 +293,14 @@ const Users = () => {
                   onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600/50 rounded-lg bg-white dark:bg-gray-700/50 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                 >
-                  {getRoleOptions().map(option => (
+                  {getRoleOptionsWithoutSuperAdmin().map(option => (
                     <option key={option.value} value={option.value}>
                       {option.label}
                     </option>
                   ))}
                 </select>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  {getRoleOptions().find(opt => opt.value === formData.role)?.description}
+                  {getRoleOptionsWithoutSuperAdmin().find(opt => opt.value === formData.role)?.description}
                 </p>
               </div>
 

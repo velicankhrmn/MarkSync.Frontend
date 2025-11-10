@@ -154,6 +154,41 @@ class PrinterService {
       throw error;
     }
   }
+
+  /**
+   * Aktif yazıcı ID'lerini al
+   * GET /api/Printer/get-active-printers
+   * @returns {Array<string>} Aktif yazıcı ID'leri
+   */
+  async getActivePrinterIds() {
+    try {
+      logger.info('Fetching active printer IDs');
+      const response = await apiService.get('/Printer/get-active-printers');
+      logger.success('Active printer IDs fetched successfully', { count: response?.length });
+      return response;
+    } catch (error) {
+      logger.error('Failed to fetch active printer IDs', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Yazıcının gerçek zamanlı durumunu al
+   * GET /api/PrinterOperation/{id}/get-printer-status
+   * @param {string} id - Yazıcı ID (GUID)
+   * @returns {Object} Yazıcı durumu
+   */
+  async getPrinterStatus(id) {
+    try {
+      logger.info(`Fetching printer status for: ${id}`);
+      const response = await apiService.get(`/PrinterOperation/${id}/get-printer-status`);
+      logger.success(`Printer status fetched successfully`, { id, status: response });
+      return response;
+    } catch (error) {
+      logger.error(`Failed to fetch printer status for: ${id}`, error);
+      throw error;
+    }
+  }
 }
 
 // Singleton instance

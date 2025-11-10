@@ -1,8 +1,8 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
-import { Moon, Sun, LogOut, Menu, X, Printer, LayoutDashboard, Users } from 'lucide-react';
-import { useState } from 'react';
+import { Moon, Sun, LogOut, Menu, X, Printer, LayoutDashboard, Users, UserCircle, Shield } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
 
 const Navbar = () => {
   const { isDark, toggleTheme } = useTheme();
@@ -10,6 +10,8 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
 
   const handleLogout = () => {
     logout();
@@ -21,6 +23,27 @@ const Navbar = () => {
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
+
+  const toggleUserMenu = () => {
+    setIsUserMenuOpen(!isUserMenuOpen);
+  };
+
+  // User menüsü dışına tıklandığında kapat
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    if (isUserMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isUserMenuOpen]);
 
   if (!user) return null;
 
@@ -57,24 +80,62 @@ const Navbar = () => {
               <Printer size={20} />
               <span>Yazıcılar</span>
             </Link>
-            <Link
-              to="/users"
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-                isActive('/users')
-                  ? 'bg-blue-500 text-white'
-                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'
-              }`}
-            >
-              <Users size={20} />
-              <span>Kullanıcılar</span>
-            </Link>
           </div>
 
           {/* Right Side Controls */}
           <div className="flex items-center gap-3">
-            {/* User Info - Hidden on mobile */}
-            <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600/50">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{user.name}</span>
+            {/* User Info with Dropdown - Hidden on mobile */}
+            <div className="hidden sm:block relative" ref={userMenuRef}>
+              <button
+                onClick={toggleUserMenu}
+                className="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600/50 hover:bg-gray-100 dark:hover:bg-gray-600/50 transition-all"
+              >
+                <UserCircle size={20} className="text-gray-600 dark:text-gray-400" />
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{user.name}</span>
+              </button>
+
+              {/* User Dropdown Menu */}
+              {isUserMenuOpen && (
+                <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                  {/* User Info Header */}
+                  <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
+                    <div className="flex items-center gap-2 mb-1">
+                      <UserCircle size={24} className="text-gray-600 dark:text-gray-400" />
+                      <span className="font-semibold text-gray-800 dark:text-white">{user.name}</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
+                      <Shield size={14} />
+                      <span className="capitalize">{user.role}</span>
+                    </div>
+                  </div>
+
+                  {/* Menu Items */}
+                  <div className="py-2">
+                    <Link
+                      to="/users"
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-all"
+                    >
+                      <Users size={16} />
+                      <span>Kullanıcı Yönetimi</span>
+                    </Link>
+                  </div>
+
+                  {/* Logout */}
+                  <div className="border-t border-gray-200 dark:border-gray-700">
+                    <button
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
+                        handleLogout();
+                      }}
+                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+                    >
+                      <LogOut size={16} />
+                      <span>Çıkış Yap</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Theme Toggle - Hidden on mobile */}
@@ -84,15 +145,6 @@ const Navbar = () => {
               aria-label="Toggle theme"
             >
               {isDark ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
-
-            {/* Logout Button - Hidden on mobile */}
-            <button
-              className="hidden sm:flex items-center justify-center p-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600/50 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200 dark:hover:bg-red-900/30 dark:hover:border-red-700 transition-all"
-              onClick={handleLogout}
-              aria-label="Logout"
-            >
-              <LogOut size={20} />
             </button>
 
             {/* Mobile Menu Toggle */}
