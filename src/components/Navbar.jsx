@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
-import { Moon, Sun, LogOut, Menu, X, Printer, LayoutDashboard, Users, UserCircle, Shield } from 'lucide-react';
+import { Moon, Sun, LogOut, Menu, X, Printer, LayoutDashboard, Users, UserCircle, Shield, Settings } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 
 const Navbar = () => {
@@ -119,6 +119,16 @@ const Navbar = () => {
                       <Users size={16} />
                       <span>Kullanıcı Yönetimi</span>
                     </Link>
+                    {user.role === 'superadmin' && (
+                      <Link
+                        to="/settings"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-all"
+                      >
+                        <Settings size={16} />
+                        <span>Gizli Ayarlar</span>
+                      </Link>
+                    )}
                   </div>
 
                   {/* Logout */}
@@ -199,6 +209,20 @@ const Navbar = () => {
               <Users size={20} />
               <span>Kullanıcılar</span>
             </Link>
+            {user.role === 'superadmin' && (
+              <Link
+                to="/settings"
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${
+                  isActive('/settings')
+                    ? 'bg-blue-500 text-white'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'
+                }`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <Settings size={20} />
+                <span>Gizli Ayarlar</span>
+              </Link>
+            )}
             <div className="pt-2 mt-2 border-t border-gray-200 dark:border-gray-700/50 flex items-center gap-2">
               <button
                 className="flex-1 flex items-center justify-center gap-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-gray-700 dark:text-gray-200"

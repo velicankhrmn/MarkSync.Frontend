@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import printerService from '../services/printerService';
+import settingsService from '../services/settingsService';
 import {
   Printer,
   Activity,
@@ -15,52 +16,138 @@ import {
   Hash,
   Calendar,
   Clock,
-  BarChart3
+  BarChart3,
+  Search,
+  Filter
 } from 'lucide-react';
 
 const Dashboard = () => {
-  const [activePrinterIds, setActivePrinterIds] = useState([]);
+  const [activePrinters, setActivePrinters] = useState([]);
   const [printerStatuses, setPrinterStatuses] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(false);
+  const [refreshInterval, setRefreshInterval] = useState(30);
+  const [selectedPrinterIds, setSelectedPrinterIds] = useState(new Set());
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const intervalRef = useRef(null);
 
-  // Aktif yazıcı ID'lerini yükle
+  // Ayarları yükle
+  useEffect(() => {
+    loadSettings();
+  }, []);
+
+  // Aktif yazıcıları yükle
   useEffect(() => {
     loadActivePrinters();
   }, []);
 
-  const loadActivePrinters = async () => {
+  // Otomatik yenileme
+  useEffect(() => {
+    // Mevcut interval'i temizle
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
+    // Eğer otomatik yenileme aktifse yeni interval başlat
+    if (autoRefreshEnabled && refreshInterval > 0) {
+      intervalRef.current = setInterval(() => {
+        loadActivePrinters(false); // Otomatik yenilemelerde loading gösterme
+      }, refreshInterval * 1000); // saniyeyi milisaniyeye çevir
+    }
+
+    // Cleanup function
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [autoRefreshEnabled, refreshInterval]);
+
+  const loadSettings = async () => {
     try {
-      setLoading(true);
+      const settings = await settingsService.getSettings();
+      setAutoRefreshEnabled(settings.autoRefreshEnabled || false);
+      setRefreshInterval(settings.refreshInterval || 30);
+    } catch (err) {
+      console.error('Ayarlar yüklenirken hata:', err);
+      // Varsayılan değerleri kullan
+      setAutoRefreshEnabled(false);
+      setRefreshInterval(30);
+    }
+  };
+
+  const loadActivePrinters = async (isInitialLoad = true) => {
+    try {
+      // Sadece ilk yüklemede loading göster, otomatik yenilemelerde gösterme
+      if (isInitialLoad) {
+        setLoading(true);
+      }
       setError(null);
 
-      // Aktif yazıcı ID'lerini al (API'den array of GUIDs döner)
-      const activeIds = await printerService.getActivePrinterIds();
-      setActivePrinterIds(activeIds || []);
+      // Aktif yazıcıları al (API'den array of {id, name} döner)
+      const printers = await printerService.getActivePrinterIds();
+      setActivePrinters(printers || []);
 
-      // Her aktif yazıcı için status bilgilerini al
-      await loadPrinterStatuses(activeIds || []);
+      // Filtrelenmiş yazıcılar için status bilgilerini al
+      const filteredPrinters = getFilteredPrinters(printers || []);
+      await loadPrinterStatuses(filteredPrinters);
     } catch (err) {
       setError(err.message || 'Yazıcılar yüklenirken bir hata oluştu');
     } finally {
-      setLoading(false);
+      if (isInitialLoad) {
+        setLoading(false);
+      }
+    }
+  };
+
+  // Filtreleme fonksiyonu - Seçili yazıcıları döndür
+  const getFilteredPrinters = (printers) => {
+    if (selectedPrinterIds.size === 0) {
+      return printers; // Hiç seçim yoksa hepsini döndür
+    }
+
+    return printers.filter(printer => selectedPrinterIds.has(printer.id));
+  };
+
+  // Yazıcı seçim/seçim kaldırma
+  const togglePrinterSelection = (printerId) => {
+    const newSelection = new Set(selectedPrinterIds);
+    if (newSelection.has(printerId)) {
+      newSelection.delete(printerId);
+    } else {
+      newSelection.add(printerId);
+    }
+    setSelectedPrinterIds(newSelection);
+  };
+
+  // Tümünü seç/kaldır
+  const toggleSelectAll = () => {
+    if (selectedPrinterIds.size === activePrinters.length) {
+      setSelectedPrinterIds(new Set());
+    } else {
+      setSelectedPrinterIds(new Set(activePrinters.map(p => p.id)));
     }
   };
 
   // Her yazıcı için ayrı ayrı status bilgisi al
-  const loadPrinterStatuses = async (printerIds) => {
-    const statusPromises = printerIds.map(async (printerId) => {
+  const loadPrinterStatuses = async (printers) => {
+    const statusPromises = printers.map(async (printer) => {
       try {
-        const status = await printerService.getPrinterStatus(printerId);
+        const status = await printerService.getPrinterStatus(printer.id);
         return {
-          printerId: printerId,
+          printerId: printer.id,
+          printerName: printer.name,
           status: status,
           error: null,
           loading: false
         };
       } catch (error) {
         return {
-          printerId: printerId,
+          printerId: printer.id,
+          printerName: printer.name,
           status: null,
           error: error.message || 'Yazıcı durumu alınamadı',
           loading: false
@@ -75,6 +162,7 @@ const Dashboard = () => {
     const statusMap = {};
     results.forEach(result => {
       statusMap[result.printerId] = {
+        name: result.printerName,
         data: result.status,
         error: result.error,
         loading: result.loading
@@ -165,19 +253,22 @@ const Dashboard = () => {
 
   // İstatistikleri hesapla
   const calculateStats = () => {
-    const total = activePrinterIds.length;
+    const total = activePrinters.length;
     let ready = 0, printing = 0, offline = 0, errorCount = 0;
 
-    Object.entries(printerStatuses).forEach(([printerId, statusData]) => {
+    Object.entries(printerStatuses).forEach(([, statusData]) => {
       if (statusData.error || !statusData.data) {
         offline++;
       } else {
         switch (statusData.data.printerStatus) {
+          case 0:
+            printing++;
+            break;
           case 1:
             ready++;
             break;
           case 2:
-            printing++;
+            offline++;
             break;
           case 3:
             errorCount++;
@@ -233,20 +324,81 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-transparent p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">Dashboard</h1>
-            <p className="text-gray-600 dark:text-gray-400">
-              Aktif yazıcıların anlık durumlarını izleyin
-            </p>
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">Dashboard</h1>
+              <p className="text-gray-600 dark:text-gray-400">
+                Aktif yazıcıların anlık durumlarını izleyin
+              </p>
+            </div>
+            <button
+              onClick={loadActivePrinters}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all"
+            >
+              <RefreshCw size={20} />
+              <span className="hidden sm:inline">Yenile</span>
+            </button>
           </div>
-          <button
-            onClick={loadActivePrinters}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all"
-          >
-            <RefreshCw size={20} />
-            <span className="hidden sm:inline">Yenile</span>
-          </button>
+
+          {/* Filter Section */}
+          <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-md border border-gray-200 dark:border-gray-700/50 p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Filter size={20} className="text-blue-600 dark:text-blue-400" />
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Yazıcı Filtresi</h3>
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                  ({selectedPrinterIds.size === 0 ? 'Tümü' : `${selectedPrinterIds.size} seçili`})
+                </span>
+              </div>
+              <button
+                onClick={() => setShowFilterPanel(!showFilterPanel)}
+                className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+              >
+                {showFilterPanel ? 'Gizle' : 'Göster'}
+              </button>
+            </div>
+
+            {showFilterPanel && (
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
+                <div className="flex items-center justify-between mb-3">
+                  <button
+                    onClick={toggleSelectAll}
+                    className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+                  >
+                    {selectedPrinterIds.size === activePrinters.length ? 'Tümünü Kaldır' : 'Tümünü Seç'}
+                  </button>
+                  {selectedPrinterIds.size > 0 && (
+                    <button
+                      onClick={() => setSelectedPrinterIds(new Set())}
+                      className="text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                    >
+                      Filtreyi Temizle
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-64 overflow-y-auto">
+                  {activePrinters.map(printer => (
+                    <label
+                      key={printer.id}
+                      className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/50 cursor-pointer transition-all"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedPrinterIds.has(printer.id)}
+                        onChange={() => togglePrinterSelection(printer.id)}
+                        className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700 dark:text-gray-300 truncate">
+                        {printer.name}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Statistics Cards */}
@@ -316,15 +468,21 @@ const Dashboard = () => {
         <div>
           <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">Yazıcı Durumları</h2>
 
-          {activePrinterIds.length === 0 ? (
+          {activePrinters.length === 0 ? (
             <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-md p-12 text-center border border-gray-200 dark:border-gray-700/50">
               <Printer size={48} className="mx-auto text-gray-400 mb-4" />
               <p className="text-gray-600 dark:text-gray-400">Aktif yazıcı bulunamadı</p>
             </div>
+          ) : getFilteredPrinters(activePrinters).length === 0 ? (
+            <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-md p-12 text-center border border-gray-200 dark:border-gray-700/50">
+              <Filter size={48} className="mx-auto text-gray-400 mb-4" />
+              <p className="text-gray-600 dark:text-gray-400">Seçili yazıcı bulunamadı</p>
+              <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">Lütfen yukarıdan yazıcı seçin</p>
+            </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-              {activePrinterIds.map(printerId => {
-                const statusData = printerStatuses[printerId];
+              {getFilteredPrinters(activePrinters).map(printer => {
+                const statusData = printerStatuses[printer.id];
                 const hasError = statusData?.error;
                 const isLoading = !statusData;
                 const printerStatus = statusData?.data;
@@ -333,7 +491,7 @@ const Dashboard = () => {
 
                 return (
                   <div
-                    key={printerId}
+                    key={printer.id}
                     className="bg-white dark:bg-gray-800/50 rounded-xl shadow-md border border-gray-200 dark:border-gray-700/50 overflow-hidden hover:shadow-lg transition-shadow"
                   >
                     {/* Card Header */}
@@ -343,7 +501,7 @@ const Dashboard = () => {
                           <div className={`p-2 rounded-lg ${
                             hasError ? 'bg-red-100 dark:bg-red-900/30' :
                             isLoading ? 'bg-gray-100 dark:bg-gray-700' :
-                            printerStatus?.printerStatus === 2 ? 'bg-blue-100 dark:bg-blue-900/30' :
+                            printerStatus?.printerStatus === 0 ? 'bg-blue-100 dark:bg-blue-900/30' :
                             printerStatus?.printerStatus === 1 ? 'bg-green-100 dark:bg-green-900/30' :
                             printerStatus?.printerStatus === 3 ? 'bg-red-100 dark:bg-red-900/30' :
                             'bg-gray-100 dark:bg-gray-700'
@@ -353,7 +511,7 @@ const Dashboard = () => {
                             ) : (
                               <Printer size={20} className={
                                 hasError ? 'text-red-600 dark:text-red-400' :
-                                printerStatus?.printerStatus === 2 ? 'text-blue-600 dark:text-blue-400' :
+                                printerStatus?.printerStatus === 0 ? 'text-blue-600 dark:text-blue-400' :
                                 printerStatus?.printerStatus === 1 ? 'text-green-600 dark:text-green-400' :
                                 printerStatus?.printerStatus === 3 ? 'text-red-600 dark:text-red-400' :
                                 'text-gray-600 dark:text-gray-400'
@@ -362,10 +520,10 @@ const Dashboard = () => {
                           </div>
                           <div>
                             <h3 className="text-xl font-bold text-gray-800 dark:text-white">
-                              {printerStatus?.printerName || 'Yükleniyor...'}
+                              {statusData?.name || printer.name || 'Yükleniyor...'}
                             </h3>
                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                              ID: {printerId.substring(0, 8)}...
+                              ID: {printer.id.substring(0, 8)}...
                             </p>
                             {printerStatus?.lastUpdated && (
                               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">

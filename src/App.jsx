@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Printers from './pages/Printers';
 import Users from './pages/Users';
+import Settings from './pages/Settings';
 
 function App() {
   return (
@@ -38,6 +39,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Users />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/settings"
+                element={
+                  <ProtectedRoute requiredRole="superadmin">
+                    <Settings />
                   </ProtectedRoute>
                 }
               />
