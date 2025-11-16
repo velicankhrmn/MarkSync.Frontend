@@ -17,7 +17,6 @@ import {
   Calendar,
   Clock,
   BarChart3,
-  Search,
   Filter
 } from 'lucide-react';
 
@@ -257,7 +256,11 @@ const Dashboard = () => {
     let ready = 0, printing = 0, offline = 0, errorCount = 0;
 
     Object.entries(printerStatuses).forEach(([, statusData]) => {
-      if (statusData.error || !statusData.data) {
+      if (statusData.error) {
+        // API isteği başarısız oldu, hata olarak say
+        errorCount++;
+      } else if (!statusData.data) {
+        // Data yok ama hata da yok, offline say
         offline++;
       } else {
         switch (statusData.data.printerStatus) {
@@ -518,11 +521,11 @@ const Dashboard = () => {
                               } />
                             )}
                           </div>
-                          <div>
-                            <h3 className="text-xl font-bold text-gray-800 dark:text-white">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-xl font-bold text-gray-800 dark:text-white break-words">
                               {statusData?.name || printer.name || 'Yükleniyor...'}
                             </h3>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 break-all">
                               ID: {printer.id.substring(0, 8)}...
                             </p>
                             {printerStatus?.lastUpdated && (
@@ -565,7 +568,7 @@ const Dashboard = () => {
                       {hasError && (
                         <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                           <AlertCircle size={16} className="text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
-                          <span className="text-sm text-red-700 dark:text-red-300">
+                          <span className="text-sm text-red-700 dark:text-red-300 break-words">
                             {statusData.error}
                           </span>
                         </div>
@@ -582,11 +585,11 @@ const Dashboard = () => {
                                   <p className="text-xs font-medium text-blue-600 dark:text-blue-400 mb-1">
                                     Aktif Şablon
                                   </p>
-                                  <p className="text-sm font-semibold text-gray-800 dark:text-white">
+                                  <p className="text-sm font-semibold text-gray-800 dark:text-white break-words">
                                     {printerStatus.activeTemplate.name}
                                   </p>
                                   {printerStatus.activeTemplate.content && (
-                                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 break-words">
                                       {printerStatus.activeTemplate.content}
                                     </p>
                                   )}
@@ -604,17 +607,17 @@ const Dashboard = () => {
                                               key={index}
                                               className={`flex items-center gap-2 p-2 rounded-lg border ${fieldInfo.bgColor} ${fieldInfo.borderColor}`}
                                             >
-                                              <FieldIcon size={14} className={fieldInfo.color} />
+                                              <FieldIcon size={14} className={`${fieldInfo.color} flex-shrink-0`} />
                                               <div className="flex-1 min-w-0">
-                                                <div className="flex items-center justify-between gap-2">
-                                                  <span className={`text-xs font-medium ${fieldInfo.color}`}>
+                                                <div className="flex items-center justify-between gap-2 flex-wrap">
+                                                  <span className={`text-xs font-medium ${fieldInfo.color} break-words`}>
                                                     {field.name}
                                                   </span>
-                                                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                  <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
                                                     ({fieldInfo.name})
                                                   </span>
                                                 </div>
-                                                <p className="text-sm font-semibold text-gray-800 dark:text-white truncate">
+                                                <p className="text-sm font-semibold text-gray-800 dark:text-white break-words">
                                                   {field.value}
                                                 </p>
                                               </div>
