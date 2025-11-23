@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import authService from '../services/authService';
 import { LogIn, User, Lock } from 'lucide-react';
 
@@ -10,6 +11,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login } = useAuth();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
 
   // Kullanıcı zaten giriş yapmışsa dashboard'a yönlendir
@@ -24,7 +26,7 @@ const Login = () => {
     setError('');
 
     if (!username || !password) {
-      setError('Lütfen kullanıcı adı ve şifre giriniz');
+      setError(language === 'tr' ? 'Lütfen kullanıcı adı ve şifre giriniz' : 'Please enter username and password');
       return;
     }
 
@@ -35,10 +37,10 @@ const Login = () => {
       if (success) {
         navigate('/dashboard');
       } else {
-        setError('Giriş başarısız. Lütfen kullanıcı adı ve şifrenizi kontrol ediniz.');
+        setError(t('login.error'));
       }
     } catch (err) {
-      setError(err.message || 'Bir hata oluştu. Lütfen tekrar deneyiniz.');
+      setError(err.message || (language === 'tr' ? 'Bir hata oluştu. Lütfen tekrar deneyiniz.' : 'An error occurred. Please try again.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -50,10 +52,10 @@ const Login = () => {
         <div className="text-center mb-8">
           <img src="/3SINK-LOGO.png" alt="3SINK Logo" className="h-16 w-auto mx-auto mb-6" />
           <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
-            MarkSync Yönetim Paneli
+            {language === 'tr' ? 'MarkSync Yönetim Paneli' : 'MarkSync Admin Panel'}
           </h1>
           <p className="text-gray-600 dark:text-gray-300">
-            Yazıcı yönetim sistemine hoş geldiniz
+            {language === 'tr' ? 'Yazıcı yönetim sistemine hoş geldiniz' : 'Welcome to the printer management system'}
           </p>
         </div>
 
@@ -61,7 +63,7 @@ const Login = () => {
           <div className="space-y-2">
             <label htmlFor="username" className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-200">
               <User size={18} />
-              Kullanıcı Adı
+              {t('login.username')}
             </label>
             <input
               id="username"
@@ -69,7 +71,7 @@ const Login = () => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600/50 bg-white dark:bg-gray-700/50 text-gray-800 dark:text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all outline-none"
-              placeholder="Kullanıcı adınızı giriniz"
+              placeholder={language === 'tr' ? 'Kullanıcı adınızı giriniz' : 'Enter your username'}
               autoComplete="username"
             />
           </div>
@@ -77,7 +79,7 @@ const Login = () => {
           <div className="space-y-2">
             <label htmlFor="password" className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-200">
               <Lock size={18} />
-              Şifre
+              {t('login.password')}
             </label>
             <input
               id="password"
@@ -85,7 +87,7 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600/50 bg-white dark:bg-gray-700/50 text-gray-800 dark:text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all outline-none"
-              placeholder="Şifrenizi giriniz"
+              placeholder={language === 'tr' ? 'Şifrenizi giriniz' : 'Enter your password'}
               autoComplete="current-password"
             />
           </div>
@@ -104,12 +106,12 @@ const Login = () => {
             {isSubmitting ? (
               <>
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Giriş Yapılıyor...
+                {language === 'tr' ? 'Giriş Yapılıyor...' : 'Logging in...'}
               </>
             ) : (
               <>
                 <LogIn size={20} />
-                Giriş Yap
+                {t('login.loginButton')}
               </>
             )}
           </button>
@@ -117,7 +119,9 @@ const Login = () => {
 
         <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700/50">
           <p className="text-center text-sm text-gray-500 dark:text-gray-400">
-            Giriş yapmak için kullanıcı adı ve şifrenizi giriniz
+            {language === 'tr'
+              ? 'Giriş yapmak için kullanıcı adı ve şifrenizi giriniz'
+              : 'Enter your username and password to login'}
           </p>
         </div>
       </div>

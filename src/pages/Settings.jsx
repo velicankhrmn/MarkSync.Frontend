@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import settingsService from '../services/settingsService';
-import { Settings as SettingsIcon, Save, RefreshCw, Clock, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Settings as SettingsIcon, Save, RefreshCw, Clock, ToggleLeft, ToggleRight, Globe } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 const Settings = () => {
+  const { language, changeLanguage, t } = useLanguage();
   const [settings, setSettings] = useState({
     refreshInterval: 30, // saniye cinsinden
     autoRefreshEnabled: false
@@ -40,26 +42,26 @@ const Settings = () => {
 
       // Validasyon
       if (settings.refreshInterval < 5) {
-        setError('Yenilenme süresi en az 5 saniye olmalıdır');
+        setError(t('settings.minInterval'));
         setSaving(false);
         return;
       }
 
       if (settings.refreshInterval > 3600) {
-        setError('Yenilenme süresi en fazla 3600 saniye (1 saat) olabilir');
+        setError(t('settings.maxInterval'));
         setSaving(false);
         return;
       }
 
       await settingsService.updateSettings(settings);
-      setSuccessMessage('Ayarlar başarıyla kaydedildi');
+      setSuccessMessage(t('settings.saveSuccess'));
 
       // Başarı mesajını 3 saniye sonra temizle
       setTimeout(() => {
         setSuccessMessage('');
       }, 3000);
     } catch (err) {
-      setError(err.message || 'Ayarlar kaydedilirken bir hata oluştu');
+      setError(err.message || t('settings.saveError'));
     } finally {
       setSaving(false);
     }
@@ -81,7 +83,7 @@ const Settings = () => {
       <div className="min-h-screen bg-gray-50 dark:bg-transparent flex items-center justify-center">
         <div className="text-center">
           <RefreshCw size={48} className="mx-auto text-gray-400 mb-4 animate-spin" />
-          <p className="text-gray-600 dark:text-gray-400">Ayarlar yükleniyor...</p>
+          <p className="text-gray-600 dark:text-gray-400">{t('common.loading')}...</p>
         </div>
       </div>
     );
@@ -94,10 +96,12 @@ const Settings = () => {
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <SettingsIcon size={32} className="text-gray-700 dark:text-gray-300" />
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Gizli Ayarlar</h1>
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">{t('settings.title')}</h1>
           </div>
           <p className="text-gray-600 dark:text-gray-400">
-            Sadece süper yöneticiler bu sayfayı görebilir ve düzenleyebilir.
+            {language === 'tr'
+              ? 'Sadece süper yöneticiler bu sayfayı görebilir ve düzenleyebilir.'
+              : 'Only super administrators can view and edit this page.'}
           </p>
         </div>
 
@@ -126,10 +130,10 @@ const Settings = () => {
                 </div>
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-1">
-                    Yenilenme Süresi
+                    {t('settings.refreshInterval')}
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    Dashboard ekranında yazıcı durumlarının otomatik yenilenme aralığını belirleyin (saniye cinsinden).
+                    {t('settings.intervalHelp')}
                   </p>
                   <div className="flex items-center gap-4">
                     <input
@@ -141,18 +145,20 @@ const Settings = () => {
                       className="flex-1 max-w-xs px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     />
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      saniye
+                      {language === 'tr' ? 'saniye' : 'seconds'}
                     </span>
                   </div>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                    Minimum: 5 saniye, Maksimum: 3600 saniye (1 saat)
+                    {language === 'tr'
+                      ? 'Minimum: 5 saniye, Maksimum: 3600 saniye (1 saat)'
+                      : 'Minimum: 5 seconds, Maximum: 3600 seconds (1 hour)'}
                   </p>
                 </div>
               </div>
             </div>
 
             {/* Auto Refresh Toggle Setting */}
-            <div>
+            <div className="pb-6 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-start gap-3">
                 <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
                   {settings.autoRefreshEnabled ? (
@@ -163,10 +169,12 @@ const Settings = () => {
                 </div>
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-1">
-                    Otomatik Yenileme
+                    {t('settings.autoRefresh')}
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    Dashboard ekranında yazıcı durumlarının belirlenen sürede otomatik olarak yenilenmesini etkinleştirin veya devre dışı bırakın.
+                    {language === 'tr'
+                      ? 'Dashboard ekranında yazıcı durumlarının belirlenen sürede otomatik olarak yenilenmesini etkinleştirin veya devre dışı bırakın.'
+                      : 'Enable or disable automatic refresh of printer statuses on the dashboard at the specified interval.'}
                   </p>
                   <button
                     onClick={handleAutoRefreshToggle}
@@ -183,11 +191,58 @@ const Settings = () => {
                     />
                   </button>
                   <p className="text-sm font-medium mt-2 text-gray-700 dark:text-gray-300">
-                    Durum: {settings.autoRefreshEnabled ? (
-                      <span className="text-green-600 dark:text-green-400">Aktif</span>
+                    {language === 'tr' ? 'Durum: ' : 'Status: '}
+                    {settings.autoRefreshEnabled ? (
+                      <span className="text-green-600 dark:text-green-400">{t('settings.enabled')}</span>
                     ) : (
-                      <span className="text-gray-600 dark:text-gray-400">Pasif</span>
+                      <span className="text-gray-600 dark:text-gray-400">{t('settings.disabled')}</span>
                     )}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Language Setting */}
+            <div>
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                  <Globe size={20} className="text-purple-600 dark:text-purple-400" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-1">
+                    {t('settings.language')}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    {language === 'tr'
+                      ? 'Uygulama dilini seçin. Tüm kullanıcılar için geçerli olacaktır.'
+                      : 'Select the application language. It will apply to all users.'}
+                  </p>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => changeLanguage('tr')}
+                      className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                        language === 'tr'
+                          ? 'bg-purple-500 text-white shadow-md'
+                          : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      {t('settings.turkish')}
+                    </button>
+                    <button
+                      onClick={() => changeLanguage('en')}
+                      className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                        language === 'en'
+                          ? 'bg-purple-500 text-white shadow-md'
+                          : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      {t('settings.english')}
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
+                    {language === 'tr'
+                      ? 'Not: API yanıtları ve hata mesajları backend tarafından belirlenir.'
+                      : 'Note: API responses and error messages are determined by the backend.'}
                   </p>
                 </div>
               </div>
@@ -205,12 +260,12 @@ const Settings = () => {
                 {saving ? (
                   <>
                     <RefreshCw size={20} className="animate-spin" />
-                    Kaydediliyor...
+                    {language === 'tr' ? 'Kaydediliyor...' : 'Saving...'}
                   </>
                 ) : (
                   <>
                     <Save size={20} />
-                    Kaydet
+                    {t('common.save')}
                   </>
                 )}
               </button>
@@ -221,8 +276,17 @@ const Settings = () => {
         {/* Info Box */}
         <div className="mt-6 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
           <p className="text-sm text-blue-800 dark:text-blue-200">
-            <strong>Not:</strong> Bu ayarlar tüm sistem için geçerlidir ve değişiklikler anında uygulanır.
-            Otomatik yenileme özelliği aktif edildiğinde, Dashboard ekranı belirlenen sürede bir güncellenir.
+            {language === 'tr' ? (
+              <>
+                <strong>Not:</strong> Bu ayarlar tüm sistem için geçerlidir ve değişiklikler anında uygulanır.
+                Otomatik yenileme özelliği aktif edildiğinde, Dashboard ekranı belirlenen sürede bir güncellenir.
+              </>
+            ) : (
+              <>
+                <strong>Note:</strong> These settings apply to the entire system and changes take effect immediately.
+                When auto-refresh is enabled, the Dashboard will update at the specified interval.
+              </>
+            )}
           </p>
         </div>
       </div>

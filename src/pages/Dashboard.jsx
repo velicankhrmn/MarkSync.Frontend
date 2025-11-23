@@ -17,7 +17,11 @@ import {
   Calendar,
   Clock,
   BarChart3,
-  Filter
+  Filter,
+  Image,
+  HelpCircle,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -29,7 +33,23 @@ const Dashboard = () => {
   const [refreshInterval, setRefreshInterval] = useState(30);
   const [selectedPrinterIds, setSelectedPrinterIds] = useState(new Set());
   const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [expandedLines, setExpandedLines] = useState({}); // { "printerId-lineNumber": true/false }
   const intervalRef = useRef(null);
+
+  // Line accordion toggle fonksiyonu
+  const toggleLineExpand = (printerId, lineNumber) => {
+    const key = `${printerId}-${lineNumber}`;
+    setExpandedLines(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+
+  // Line'ın açık olup olmadığını kontrol et
+  const isLineExpanded = (printerId, lineNumber) => {
+    const key = `${printerId}-${lineNumber}`;
+    return expandedLines[key] || false;
+  };
 
   // Ayarları yükle
   useEffect(() => {
@@ -188,10 +208,11 @@ const Dashboard = () => {
     }
   };
 
-  // Field Type enum'ları ve görsel özellikleri
+  // MessageFieldType enum'ları ve görsel özellikleri
+  // Text = 0, Variable = 1, Date = 2, Time = 3, Counter = 4, Logo = 5, Unknown = 6
   const getFieldTypeInfo = (fieldType) => {
     switch (fieldType) {
-      case 0:
+      case 0: // Text
         return {
           name: 'Metin',
           icon: Type,
@@ -199,39 +220,7 @@ const Dashboard = () => {
           bgColor: 'bg-blue-50 dark:bg-blue-900/20',
           borderColor: 'border-blue-200 dark:border-blue-800'
         };
-      case 1:
-        return {
-          name: 'Saat',
-          icon: Clock,
-          color: 'text-green-600 dark:text-green-400',
-          bgColor: 'bg-green-50 dark:bg-green-900/20',
-          borderColor: 'border-green-200 dark:border-green-800'
-        };
-      case 2:
-        return {
-          name: 'Tarih',
-          icon: Calendar,
-          color: 'text-purple-600 dark:text-purple-400',
-          bgColor: 'bg-purple-50 dark:bg-purple-900/20',
-          borderColor: 'border-purple-200 dark:border-purple-800'
-        };
-      case 3:
-        return {
-          name: 'Tarih/Saat',
-          icon: Calendar,
-          color: 'text-indigo-600 dark:text-indigo-400',
-          bgColor: 'bg-indigo-50 dark:bg-indigo-900/20',
-          borderColor: 'border-indigo-200 dark:border-indigo-800'
-        };
-      case 4:
-        return {
-          name: 'Sayaç',
-          icon: Hash,
-          color: 'text-orange-600 dark:text-orange-400',
-          bgColor: 'bg-orange-50 dark:bg-orange-900/20',
-          borderColor: 'border-orange-200 dark:border-orange-800'
-        };
-      case 5:
+      case 1: // Variable
         return {
           name: 'Değişken',
           icon: BarChart3,
@@ -239,10 +228,43 @@ const Dashboard = () => {
           bgColor: 'bg-cyan-50 dark:bg-cyan-900/20',
           borderColor: 'border-cyan-200 dark:border-cyan-800'
         };
+      case 2: // Date
+        return {
+          name: 'Tarih',
+          icon: Calendar,
+          color: 'text-purple-600 dark:text-purple-400',
+          bgColor: 'bg-purple-50 dark:bg-purple-900/20',
+          borderColor: 'border-purple-200 dark:border-purple-800'
+        };
+      case 3: // Time
+        return {
+          name: 'Saat',
+          icon: Clock,
+          color: 'text-green-600 dark:text-green-400',
+          bgColor: 'bg-green-50 dark:bg-green-900/20',
+          borderColor: 'border-green-200 dark:border-green-800'
+        };
+      case 4: // Counter
+        return {
+          name: 'Sayaç',
+          icon: Hash,
+          color: 'text-orange-600 dark:text-orange-400',
+          bgColor: 'bg-orange-50 dark:bg-orange-900/20',
+          borderColor: 'border-orange-200 dark:border-orange-800'
+        };
+      case 5: // Logo
+        return {
+          name: 'Logo',
+          icon: Image,
+          color: 'text-pink-600 dark:text-pink-400',
+          bgColor: 'bg-pink-50 dark:bg-pink-900/20',
+          borderColor: 'border-pink-200 dark:border-pink-800'
+        };
+      case 6: // Unknown
       default:
         return {
           name: 'Bilinmiyor',
-          icon: Type,
+          icon: HelpCircle,
           color: 'text-gray-600 dark:text-gray-400',
           bgColor: 'bg-gray-50 dark:bg-gray-800',
           borderColor: 'border-gray-200 dark:border-gray-700'
@@ -521,11 +543,11 @@ const Dashboard = () => {
                               } />
                             )}
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-xl font-bold text-gray-800 dark:text-white break-words">
+                          <div className="flex-1 min-w-0 overflow-hidden">
+                            <h3 className="text-xl font-bold text-gray-800 dark:text-white" style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
                               {statusData?.name || printer.name || 'Yükleniyor...'}
                             </h3>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 break-all">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1" style={{ wordBreak: 'break-all' }}>
                               ID: {printer.id.substring(0, 8)}...
                             </p>
                             {printerStatus?.lastUpdated && (
@@ -566,9 +588,9 @@ const Dashboard = () => {
                       )}
 
                       {hasError && (
-                        <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                        <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg overflow-hidden">
                           <AlertCircle size={16} className="text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
-                          <span className="text-sm text-red-700 dark:text-red-300 break-words">
+                          <span className="text-sm text-red-700 dark:text-red-300" style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
                             {statusData.error}
                           </span>
                         </div>
@@ -578,57 +600,118 @@ const Dashboard = () => {
                         <>
                           {/* Active Template */}
                           {printerStatus.activeTemplate && printerStatus.activeTemplate.name ? (
-                            <div className="p-4 bg-blue-50 dark:bg-blue-900/10 rounded-lg border border-blue-200 dark:border-blue-800">
-                              <div className="flex items-start gap-2 mb-2">
-                                <FileText size={16} className="text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-                                <div className="flex-1">
-                                  <p className="text-xs font-medium text-blue-600 dark:text-blue-400 mb-1">
+                            <div className="space-y-3">
+                              {/* Template Header */}
+                              <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
+                                <FileText size={18} className="text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs font-medium text-blue-600 dark:text-blue-400">
                                     Aktif Şablon
                                   </p>
-                                  <p className="text-sm font-semibold text-gray-800 dark:text-white break-words">
+                                  <p className="text-base font-semibold text-gray-800 dark:text-white" style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
                                     {printerStatus.activeTemplate.name}
                                   </p>
                                   {printerStatus.activeTemplate.content && (
-                                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 break-words">
+                                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1" style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
                                       {printerStatus.activeTemplate.content}
                                     </p>
                                   )}
-                                  {printerStatus.activeTemplate.fields && printerStatus.activeTemplate.fields.length > 0 && (
-                                    <div className="mt-3">
-                                      <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
-                                        Şablon İçeriği:
-                                      </p>
-                                      <div className="space-y-2">
-                                        {printerStatus.activeTemplate.fields.map((field, index) => {
-                                          const fieldInfo = getFieldTypeInfo(field.fieldType);
-                                          const FieldIcon = fieldInfo.icon;
-                                          return (
-                                            <div
-                                              key={index}
-                                              className={`flex items-center gap-2 p-2 rounded-lg border ${fieldInfo.bgColor} ${fieldInfo.borderColor}`}
-                                            >
-                                              <FieldIcon size={14} className={`${fieldInfo.color} flex-shrink-0`} />
-                                              <div className="flex-1 min-w-0">
-                                                <div className="flex items-center justify-between gap-2 flex-wrap">
-                                                  <span className={`text-xs font-medium ${fieldInfo.color} break-words`}>
-                                                    {field.name}
-                                                  </span>
-                                                  <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                                                    ({fieldInfo.name})
-                                                  </span>
-                                                </div>
-                                                <p className="text-sm font-semibold text-gray-800 dark:text-white break-words">
-                                                  {field.value}
-                                                </p>
-                                              </div>
-                                            </div>
-                                          );
-                                        })}
-                                      </div>
-                                    </div>
-                                  )}
                                 </div>
                               </div>
+
+                              {/* Lines - Her satır için ayrı card */}
+                              {printerStatus.activeTemplate.lines && printerStatus.activeTemplate.lines.length > 0 ? (
+                                <div className="space-y-3">
+                                  {printerStatus.activeTemplate.lines.map((line) => {
+                                    const isExpanded = isLineExpanded(printer.id, line.lineNumber);
+                                    return (
+                                      <div
+                                        key={line.lineNumber}
+                                        className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-800/50 overflow-hidden"
+                                      >
+                                        {/* Line Header with LineContent */}
+                                        <div className="p-4">
+                                          <div className="flex items-center gap-2 mb-2">
+                                            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-500 text-white text-xs font-bold flex-shrink-0">
+                                              {line.lineNumber}
+                                            </div>
+                                            <span className="text-sm font-semibold text-gray-800 dark:text-white" style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
+                                              {line.lineName || `Satır ${line.lineNumber}`}
+                                            </span>
+                                          </div>
+
+                                          {/* LineContent - Ana içerik */}
+                                          {line.lineContent && (
+                                            <div className="mt-2 p-3 bg-white/60 dark:bg-gray-800/40 rounded-lg border border-blue-100 dark:border-blue-700/30">
+                                              <p className="text-base font-medium text-gray-800 dark:text-white" style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
+                                                {line.lineContent}
+                                              </p>
+                                            </div>
+                                          )}
+                                        </div>
+
+                                        {/* Fields Accordion Toggle */}
+                                        {line.fields && line.fields.length > 0 && (
+                                          <>
+                                            <button
+                                              onClick={() => toggleLineExpand(printer.id, line.lineNumber)}
+                                              className="w-full flex items-center justify-between px-4 py-2 bg-blue-100/50 dark:bg-blue-800/30 border-t border-blue-200 dark:border-blue-700/50 hover:bg-blue-100 dark:hover:bg-blue-800/50 transition-all"
+                                            >
+                                              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                                                Detaylar ({line.fields.length} alan)
+                                              </span>
+                                              {isExpanded ? (
+                                                <ChevronUp size={18} className="text-blue-600 dark:text-blue-400" />
+                                              ) : (
+                                                <ChevronDown size={18} className="text-blue-600 dark:text-blue-400" />
+                                              )}
+                                            </button>
+
+                                            {/* Collapsible Fields Section */}
+                                            {isExpanded && (
+                                              <div className="p-4 pt-3 border-t border-blue-200 dark:border-blue-700/50 bg-white/30 dark:bg-gray-800/20">
+                                                <div className="space-y-2">
+                                                  {line.fields.map((field, fieldIndex) => {
+                                                    const fieldInfo = getFieldTypeInfo(field.fieldType);
+                                                    const FieldIcon = fieldInfo.icon;
+                                                    return (
+                                                      <div
+                                                        key={fieldIndex}
+                                                        className={`flex items-start gap-2 p-3 rounded-lg border ${fieldInfo.bgColor} ${fieldInfo.borderColor}`}
+                                                      >
+                                                        <FieldIcon size={16} className={`${fieldInfo.color} flex-shrink-0 mt-0.5`} />
+                                                        <div className="flex-1 min-w-0 overflow-hidden">
+                                                          <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
+                                                            <span className={`text-xs font-medium ${fieldInfo.color}`} style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
+                                                              {field.name}
+                                                            </span>
+                                                            <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap px-2 py-0.5 bg-white/50 dark:bg-gray-800/50 rounded">
+                                                              {fieldInfo.name}
+                                                            </span>
+                                                          </div>
+                                                          <p className="text-sm font-semibold text-gray-800 dark:text-white" style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
+                                                            {field.value || '-'}
+                                                          </p>
+                                                        </div>
+                                                      </div>
+                                                    );
+                                                  })}
+                                                </div>
+                                              </div>
+                                            )}
+                                          </>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              ) : (
+                                <div className="p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                                    Şablon satırı bulunamadı
+                                  </p>
+                                </div>
+                              )}
                             </div>
                           ) : (
                             <div className="p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg border border-gray-200 dark:border-gray-600/50">

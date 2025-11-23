@@ -1,12 +1,14 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { Moon, Sun, LogOut, Menu, X, Printer, LayoutDashboard, Users, UserCircle, Shield, Settings } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 
 const Navbar = () => {
   const { isDark, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -67,7 +69,7 @@ const Navbar = () => {
               }`}
             >
               <LayoutDashboard size={20} />
-              <span>Dashboard</span>
+              <span>{t('nav.dashboard')}</span>
             </Link>
             <Link
               to="/printers"
@@ -78,7 +80,7 @@ const Navbar = () => {
               }`}
             >
               <Printer size={20} />
-              <span>Yazıcılar</span>
+              <span>{t('nav.printers')}</span>
             </Link>
           </div>
 
@@ -117,7 +119,7 @@ const Navbar = () => {
                       className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-all"
                     >
                       <Users size={16} />
-                      <span>Kullanıcı Yönetimi</span>
+                      <span>{t('nav.users')}</span>
                     </Link>
                     {user.role === 'superadmin' && (
                       <Link
@@ -126,7 +128,7 @@ const Navbar = () => {
                         className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-all"
                       >
                         <Settings size={16} />
-                        <span>Gizli Ayarlar</span>
+                        <span>{t('nav.settings')}</span>
                       </Link>
                     )}
                   </div>
@@ -141,7 +143,7 @@ const Navbar = () => {
                       className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
                     >
                       <LogOut size={16} />
-                      <span>Çıkış Yap</span>
+                      <span>{t('nav.logout')}</span>
                     </button>
                   </div>
                 </div>
@@ -183,7 +185,7 @@ const Navbar = () => {
               onClick={() => setIsMobileMenuOpen(false)}
             >
               <LayoutDashboard size={20} />
-              <span>Dashboard</span>
+              <span>{t('nav.dashboard')}</span>
             </Link>
             <Link
               to="/printers"
@@ -195,7 +197,7 @@ const Navbar = () => {
               onClick={() => setIsMobileMenuOpen(false)}
             >
               <Printer size={20} />
-              <span>Yazıcılar</span>
+              <span>{t('nav.printers')}</span>
             </Link>
             <Link
               to="/users"
@@ -207,7 +209,7 @@ const Navbar = () => {
               onClick={() => setIsMobileMenuOpen(false)}
             >
               <Users size={20} />
-              <span>Kullanıcılar</span>
+              <span>{t('nav.users')}</span>
             </Link>
             {user.role === 'superadmin' && (
               <Link
@@ -220,7 +222,7 @@ const Navbar = () => {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <Settings size={20} />
-                <span>Gizli Ayarlar</span>
+                <span>{t('nav.settings')}</span>
               </Link>
             )}
             <div className="pt-2 mt-2 border-t border-gray-200 dark:border-gray-700/50 flex items-center gap-2">
@@ -232,14 +234,14 @@ const Navbar = () => {
                 }}
               >
                 {isDark ? <Sun size={20} /> : <Moon size={20} />}
-                <span className="text-sm">{isDark ? 'Açık Mod' : 'Koyu Mod'}</span>
+                <span className="text-sm">{isDark ? (t('common.light') || 'Light') : (t('common.dark') || 'Dark')}</span>
               </button>
               <button
                 className="flex-1 flex items-center justify-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg"
                 onClick={handleLogout}
               >
                 <LogOut size={20} />
-                <span className="text-sm">Çıkış</span>
+                <span className="text-sm">{t('nav.logout')}</span>
               </button>
             </div>
           </div>
